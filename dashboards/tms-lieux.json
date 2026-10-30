@@ -582,9 +582,12 @@
       ],
       "options": {
         "basemap": {
-          "type": "osm-standard",
+          "type": "carto",
           "name": "Fond",
-          "config": {}
+          "config": {
+            "theme": "auto",
+            "showLabels": true
+          }
         },
         "controls": {
           "mouseWheelZoom": true,

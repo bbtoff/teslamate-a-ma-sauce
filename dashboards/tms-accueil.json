@@ -222,8 +222,8 @@
     },
     {
       "id": 3,
-      "type": "gauge",
-      "title": "Batterie",
+      "type": "canvas",
+      "title": "",
       "description": "",
       "datasource": {
         "type": "grafana-postgresql-datasource",
@@ -232,9 +232,10 @@
       "gridPos": {
         "x": 0,
         "y": 4,
-        "w": 4,
-        "h": 5
+        "w": 24,
+        "h": 10
       },
+      "transparent": true,
       "targets": [
         {
           "datasource": {
@@ -244,398 +245,1693 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT (SELECT battery_level FROM positions WHERE car_id = $car_id AND battery_level IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Batterie\", (SELECT ${preferred_range}_battery_range_km FROM positions WHERE car_id = $car_id AND ${preferred_range}_battery_range_km IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Autonomie\",\n  (SELECT odometer FROM positions WHERE car_id = $car_id AND odometer IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Odomètre\", (SELECT outside_temp FROM positions WHERE car_id = $car_id AND outside_temp IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Temp. ext.\",\n  (SELECT state::text FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"État\",\n  (SELECT extract(epoch FROM start_date) * 1000 FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"Depuis\",\n  (SELECT split_part(version, ' ', 1) FROM updates WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"Version\",\n  (SELECT CASE WHEN d.end_date IS NULL THEN '🚗 En route' ELSE COALESCE(g.name, CONCAT_WS(', ', COALESCE(a.name, NULLIF(CONCAT_WS(' ', a.road, a.house_number), '')), COALESCE(a.city, a.neighbourhood))) END FROM drives d\n     LEFT JOIN addresses a ON a.id = d.end_address_id LEFT JOIN geofences g ON g.id = d.end_geofence_id\n     WHERE d.car_id = $car_id ORDER BY d.start_date DESC LIMIT 1) AS \"Lieu\",\n  (SELECT end_date IS NULL FROM charging_processes WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"En charge\"",
+          "rawSql": "SELECT COALESCE((SELECT name FROM cars WHERE id = $car_id), 'Ma Tesla') AS \"Nom\",\n  (SELECT COALESCE(NULLIF(trim(concat_ws(' ', 'Model', model, CASE WHEN trim_badging IS NOT NULL THEN '· ' || trim_badging END)), 'Model'), '')\n     FROM cars WHERE id = $car_id) AS \"Modèle\",\n  \nCASE\n  WHEN (SELECT end_date IS NULL AND start_date > now() - interval '1 day' FROM drives WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) THEN '🚗 En route'\n  WHEN (SELECT end_date IS NULL AND start_date > now() - interval '2 days' FROM charging_processes WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) THEN '🔌 En charge'\n  ELSE (SELECT CASE state::text WHEN 'asleep' THEN '💤 Endormie' WHEN 'online' THEN '☀️ Éveillée' ELSE '📴 Hors ligne' END\n        FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1)\nEND || ' · depuis ' || (SELECT CASE WHEN s < 3600 THEN round(s / 60) || ' min' WHEN s < 86400 THEN round(s / 3600) || ' h' ELSE round(s / 86400) || ' j' END\n  FROM (SELECT extract(epoch FROM now() - start_date) AS s FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) x) AS \"État\",\n  (SELECT battery_level FROM positions WHERE car_id = $car_id AND battery_level IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Batterie\", (SELECT ${preferred_range}_battery_range_km FROM positions WHERE car_id = $car_id AND ${preferred_range}_battery_range_km IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Autonomie\",\n  (SELECT outside_temp FROM positions WHERE car_id = $car_id AND outside_temp IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Extérieur\", (SELECT inside_temp FROM positions WHERE car_id = $car_id AND inside_temp IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Habitacle\",\n  (SELECT odometer FROM positions WHERE car_id = $car_id AND odometer IS NOT NULL ORDER BY date DESC LIMIT 1) AS \"Odomètre\",\n  (SELECT split_part(version, ' ', 1) FROM updates WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"Version\",\n  (SELECT CASE WHEN d.end_date IS NULL THEN 'Sur la route' ELSE COALESCE(g.name, CONCAT_WS(', ', COALESCE(a.name, NULLIF(CONCAT_WS(' ', a.road, a.house_number), '')), COALESCE(a.city, a.neighbourhood))) END FROM drives d\n     LEFT JOIN addresses a ON a.id = d.end_address_id LEFT JOIN geofences g ON g.id = d.end_geofence_id\n     WHERE d.car_id = $car_id ORDER BY d.start_date DESC LIMIT 1) AS \"Lieu\",\n  (SELECT CASE WHEN s < 86400 THEN 'il y a ' || round(s / 3600) || ' h' ELSE 'il y a ' || round(s / 86400) || ' j' END || ' · ' || lvl || ' %'\n     FROM (SELECT extract(epoch FROM now() - COALESCE(end_date, start_date)) AS s, end_battery_level AS lvl FROM charging_processes\n           WHERE car_id = $car_id AND charge_energy_added > 0 ORDER BY start_date DESC LIMIT 1) x) AS \"Dernière recharge\"",
           "refId": "A"
         }
       ],
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^Batterie$/",
-          "values": false
+        "inlineEditing": false,
+        "panZoom": false,
+        "infinitePan": false,
+        "showAdvancedTypes": true,
+        "zoomToContent": false,
+        "tooltip": {
+          "mode": "none",
+          "disableForOneClick": true
         },
-        "showThresholdMarkers": true,
-        "showThresholdLabels": false,
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "sizing": "auto"
+        "root": {
+          "name": "Racine",
+          "type": "frame",
+          "elements": [
+            {
+              "type": "rectangle",
+              "name": "Fond voiture",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(50,116,217,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(50,116,217,0.45)"
+                },
+                "width": 1,
+                "radius": 18
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 0.5,
+                "top": 3,
+                "right": 66.5,
+                "bottom": 3
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Nom",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 28,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Nom",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 2.5,
+                "top": 7,
+                "right": 68,
+                "bottom": 78
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Modèle",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Modèle",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 2.5,
+                "top": 22,
+                "right": 68,
+                "bottom": 68
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Voiture",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/car-sideview.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#5794F2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 5,
+                "top": 28,
+                "right": 70,
+                "bottom": 26
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "État",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 15,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "État",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "field": "État",
+                  "fixed": "#6E7580"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 1,
+                "radius": 20
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 3,
+                "top": 77,
+                "right": 69,
+                "bottom": 8
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Batterie",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.0,
+                "top": 3,
+                "right": 49.62,
+                "bottom": 51
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Batterie",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/battery-bolt.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.8,
+                "top": 8,
+                "right": 62.4,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Batterie",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Batterie"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 38.0,
+                "top": 8,
+                "right": 50.12,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Batterie",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 30,
+                "color": {
+                  "field": "Batterie",
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Batterie",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.5,
+                "top": 21,
+                "right": 50.12,
+                "bottom": 54
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Autonomie (EPA)",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 51.38,
+                "top": 3,
+                "right": 33.25,
+                "bottom": 51
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Autonomie (EPA)",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/tachometer-fast.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 52.17,
+                "top": 8,
+                "right": 46.02,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Autonomie (EPA)",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Autonomie (EPA)"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 54.38,
+                "top": 8,
+                "right": 33.75,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Autonomie (EPA)",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 26,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Autonomie",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 51.88,
+                "top": 21,
+                "right": 33.75,
+                "bottom": 54
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Extérieur",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 67.75,
+                "top": 3,
+                "right": 16.88,
+                "bottom": 51
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Extérieur",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/temperature-half.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 68.55,
+                "top": 8,
+                "right": 29.65,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Extérieur",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Extérieur"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 70.75,
+                "top": 8,
+                "right": 17.38,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Extérieur",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 26,
+                "color": {
+                  "field": "Extérieur",
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Extérieur",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 68.25,
+                "top": 21,
+                "right": 17.38,
+                "bottom": 54
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Habitacle",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.12,
+                "top": 3,
+                "right": 0.5,
+                "bottom": 51
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Habitacle",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/temperature.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.92,
+                "top": 8,
+                "right": 13.28,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Habitacle",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Habitacle"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 87.12,
+                "top": 8,
+                "right": 1.0,
+                "bottom": 80
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Habitacle",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 26,
+                "color": {
+                  "field": "Habitacle",
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Habitacle",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.62,
+                "top": 21,
+                "right": 1.0,
+                "bottom": 54
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Où",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.0,
+                "top": 51,
+                "right": 49.62,
+                "bottom": 3
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Où",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/map-marker.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.8,
+                "top": 56,
+                "right": 62.4,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Où",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Où"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 38.0,
+                "top": 56,
+                "right": 50.12,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Où",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 15,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Lieu",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 35.5,
+                "top": 69,
+                "right": 50.12,
+                "bottom": 6
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Dernière recharge",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 51.38,
+                "top": 51,
+                "right": 33.25,
+                "bottom": 3
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Dernière recharge",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/plug.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 52.17,
+                "top": 56,
+                "right": 46.02,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Dernière recharge",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Dernière recharge"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 54.38,
+                "top": 56,
+                "right": 33.75,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Dernière recharge",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 15,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Dernière recharge",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 51.88,
+                "top": 69,
+                "right": 33.75,
+                "bottom": 6
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Odomètre",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 67.75,
+                "top": 51,
+                "right": 16.88,
+                "bottom": 3
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Odomètre",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/tachometer-fast-alt.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 68.55,
+                "top": 56,
+                "right": 29.65,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Odomètre",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Odomètre"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 70.75,
+                "top": 56,
+                "right": 17.38,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Odomètre",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 22,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Odomètre",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 68.25,
+                "top": 69,
+                "right": 17.38,
+                "bottom": 6
+              },
+              "connections": []
+            },
+            {
+              "type": "rectangle",
+              "name": "Tuile Logiciel",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 16,
+                "color": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.10)"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "rgba(128,128,128,0.30)"
+                },
+                "width": 1,
+                "radius": 14
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.12,
+                "top": 51,
+                "right": 0.5,
+                "bottom": 3
+              },
+              "connections": []
+            },
+            {
+              "type": "icon",
+              "name": "Icône Logiciel",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/unicons/cloud-download.svg",
+                  "field": ""
+                },
+                "fill": {
+                  "fixed": "#9AA4B2"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.92,
+                "top": 56,
+                "right": 13.28,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "text",
+              "name": "Titre Logiciel",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "size": 13,
+                "color": {
+                  "fixed": "#9AA4B2"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Logiciel"
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 87.12,
+                "top": 56,
+                "right": 1.0,
+                "bottom": 32
+              },
+              "connections": []
+            },
+            {
+              "type": "metric-value",
+              "name": "Valeur Logiciel",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "size": 20,
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Version",
+                  "fixed": ""
+                }
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0,
+                "radius": 0
+              },
+              "constraint": {
+                "horizontal": "scale",
+                "vertical": "scale"
+              },
+              "placement": {
+                "left": 84.62,
+                "top": 69,
+                "right": 1.0,
+                "bottom": 6
+              },
+              "connections": []
+            }
+          ],
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            }
+          },
+          "border": {
+            "color": {
+              "fixed": "transparent"
+            }
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "placement": {
+            "height": 100,
+            "left": 0,
+            "top": 0,
+            "width": 100
+          }
+        }
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "decimals": 0,
           "color": {
             "mode": "thresholds"
           },
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "#C4162A",
+                "color": "#E6E9EF",
                 "value": null
-              },
-              {
-                "color": "#E0752D",
-                "value": 20
-              },
-              {
-                "color": "#56A64B",
-                "value": 35
-              },
-              {
-                "color": "#3274D9",
-                "value": 85
               }
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Batterie"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": [
+                  {
+                    "color": "#C4162A",
+                    "value": null
+                  },
+                  {
+                    "color": "#E0752D",
+                    "value": 20
+                  },
+                  {
+                    "color": "#56A64B",
+                    "value": 35
+                  },
+                  {
+                    "color": "#3274D9",
+                    "value": 85
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Autonomie"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "lengthkm"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Extérieur"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": [
+                  {
+                    "color": "#5794F2",
+                    "value": null
+                  },
+                  {
+                    "color": "#1F9FAA",
+                    "value": 5
+                  },
+                  {
+                    "color": "#56A64B",
+                    "value": 15
+                  },
+                  {
+                    "color": "#E0752D",
+                    "value": 25
+                  },
+                  {
+                    "color": "#C4162A",
+                    "value": 32
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Habitacle"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "thresholds",
+                "value": [
+                  {
+                    "color": "#5794F2",
+                    "value": null
+                  },
+                  {
+                    "color": "#1F9FAA",
+                    "value": 5
+                  },
+                  {
+                    "color": "#56A64B",
+                    "value": 15
+                  },
+                  {
+                    "color": "#E0752D",
+                    "value": 25
+                  },
+                  {
+                    "color": "#C4162A",
+                    "value": 32
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Odomètre"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "lengthkm"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "État"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": ".*En route.*",
+                      "result": {
+                        "color": "#3274D9",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": ".*En charge.*",
+                      "result": {
+                        "color": "#56A64B",
+                        "index": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": ".*Endormie.*",
+                      "result": {
+                        "color": "#A352CC",
+                        "index": 2
+                      }
+                    }
+                  },
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": ".*Éveillée.*",
+                      "result": {
+                        "color": "#E0752D",
+                        "index": 3
+                      }
+                    }
+                  },
+                  {
+                    "type": "regex",
+                    "options": {
+                      "pattern": ".*Hors ligne.*",
+                      "result": {
+                        "color": "#6E7580",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     },
     {
       "id": 4,
-      "type": "stat",
-      "title": "Autonomie (EPA)",
-      "description": "",
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "gridPos": {
-        "x": 4,
-        "y": 4,
-        "w": 4,
-        "h": 5
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 3,
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^Autonomie$/",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value",
-        "wideLayout": true,
-        "orientation": "auto",
-        "showPercentChange": false
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "lengthkm",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#A352CC",
-                "value": null
-              }
-            ]
-          },
-          "mappings": []
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 5,
-      "type": "stat",
-      "title": "État",
-      "description": "",
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "gridPos": {
-        "x": 8,
-        "y": 4,
-        "w": 4,
-        "h": 5
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 3,
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^État$/",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value",
-        "wideLayout": true,
-        "orientation": "auto",
-        "showPercentChange": false
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "string",
-          "decimals": 0,
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "#6E7580"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#5B6E8C",
-                "value": null
-              }
-            ]
-          },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "online": {
-                  "text": "Éveillée",
-                  "color": "#E0752D",
-                  "index": 0
-                },
-                "asleep": {
-                  "text": "Endormie",
-                  "color": "#8F3BB8",
-                  "index": 1
-                },
-                "offline": {
-                  "text": "Hors ligne",
-                  "color": "#6E7580",
-                  "index": 2
-                }
-              }
-            }
-          ]
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 6,
-      "type": "stat",
-      "title": "Lieu",
-      "description": "",
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 4,
-        "w": 6,
-        "h": 5
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 3,
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^Lieu$/",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value",
-        "wideLayout": true,
-        "orientation": "auto",
-        "showPercentChange": false
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "string",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#1F9FAA",
-                "value": null
-              }
-            ]
-          },
-          "mappings": []
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 7,
-      "type": "stat",
-      "title": "Odomètre",
-      "description": "",
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "gridPos": {
-        "x": 18,
-        "y": 4,
-        "w": 3,
-        "h": 5
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 3,
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^Odomètre$/",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value",
-        "wideLayout": true,
-        "orientation": "auto",
-        "showPercentChange": false
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "lengthkm",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#3274D9",
-                "value": null
-              }
-            ]
-          },
-          "mappings": []
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 8,
-      "type": "stat",
-      "title": "Version",
-      "description": "",
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Dashboard --"
-      },
-      "gridPos": {
-        "x": 21,
-        "y": 4,
-        "w": 3,
-        "h": 5
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Dashboard --"
-          },
-          "panelId": 3,
-          "refId": "A"
-        }
-      ],
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^Version$/",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value",
-        "wideLayout": true,
-        "orientation": "auto",
-        "showPercentChange": false
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "string",
-          "decimals": 0,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "#6E7580",
-                "value": null
-              }
-            ]
-          },
-          "mappings": []
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 9,
       "type": "text",
       "title": "",
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 9,
+        "y": 14,
         "w": 24,
         "h": 2
       },
@@ -646,7 +1942,7 @@
       }
     },
     {
-      "id": 10,
+      "id": 5,
       "type": "stat",
       "title": "Distance",
       "description": "",
@@ -656,7 +1952,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -711,7 +2007,7 @@
       }
     },
     {
-      "id": 11,
+      "id": 6,
       "type": "stat",
       "title": "Trajets",
       "description": "",
@@ -721,7 +2017,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -731,7 +2027,7 @@
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 10,
+          "panelId": 5,
           "refId": "A"
         }
       ],
@@ -773,7 +2069,7 @@
       }
     },
     {
-      "id": 12,
+      "id": 7,
       "type": "stat",
       "title": "Conso roulage",
       "description": "",
@@ -783,7 +2079,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -793,7 +2089,7 @@
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 10,
+          "panelId": 5,
           "refId": "A"
         }
       ],
@@ -847,7 +2143,7 @@
       }
     },
     {
-      "id": 13,
+      "id": 8,
       "type": "stat",
       "title": "Recharges",
       "description": "",
@@ -857,7 +2153,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -867,7 +2163,7 @@
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 10,
+          "panelId": 5,
           "refId": "A"
         }
       ],
@@ -909,7 +2205,7 @@
       }
     },
     {
-      "id": 14,
+      "id": 9,
       "type": "stat",
       "title": "Énergie rechargée",
       "description": "",
@@ -919,7 +2215,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -929,7 +2225,7 @@
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 10,
+          "panelId": 5,
           "refId": "A"
         }
       ],
@@ -971,7 +2267,7 @@
       }
     },
     {
-      "id": 15,
+      "id": 10,
       "type": "stat",
       "title": "Coût des recharges",
       "description": "",
@@ -981,7 +2277,7 @@
       },
       "gridPos": {
         "x": 20,
-        "y": 11,
+        "y": 16,
         "w": 4,
         "h": 4
       },
@@ -991,7 +2287,7 @@
             "type": "datasource",
             "uid": "-- Dashboard --"
           },
-          "panelId": 10,
+          "panelId": 5,
           "refId": "A"
         }
       ],
@@ -1033,7 +2329,7 @@
       }
     },
     {
-      "id": 16,
+      "id": 11,
       "type": "stat",
       "title": "Dernier trajet",
       "description": "",
@@ -1043,7 +2339,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 15,
+        "y": 20,
         "w": 12,
         "h": 4
       },
@@ -1098,7 +2394,7 @@
       }
     },
     {
-      "id": 17,
+      "id": 12,
       "type": "stat",
       "title": "Dernière recharge",
       "description": "",
@@ -1108,7 +2404,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 15,
+        "y": 20,
         "w": 12,
         "h": 4
       },
@@ -1163,13 +2459,13 @@
       }
     },
     {
-      "id": 18,
+      "id": 13,
       "type": "text",
       "title": "",
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 24,
         "w": 24,
         "h": 2
       },
@@ -1180,13 +2476,13 @@
       }
     },
     {
-      "id": 19,
+      "id": 14,
       "type": "text",
       "title": "",
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 21,
+        "y": 26,
         "w": 24,
         "h": 12
       },

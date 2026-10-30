@@ -11,7 +11,8 @@ la **comparaison avec une voiture thermique** et une navigation pensée pour un 
 ## ✨ Points forts
 
 - 🇫🇷 **Tout en français** : consommations en **kWh/100 km**, montants en **euros complets**, raccourcis de période (« le mois dernier », « les 6 derniers mois »…)
-- 🧭 **Menu commun** en haut de chaque page, et une page d'**Accueil** avec l'état de la voiture et les chiffres du mois
+- 🧭 **Menu commun** en haut de chaque page, et une page d'**Accueil** avec une carte « Ma voiture » (état, batterie, températures, lieu…) et les chiffres du mois
+- 🗺️ **Cartes soignées** : fond sombre, trajets fléchés colorés selon la vitesse, carte de chaleur de tes routes. Aucun plugin à installer
 - 🖱️ **Tout est cliquable** : un trajet ou une recharge ouvre son détail ; un lieu se transforme en geofence en un clic
 - ⚡ **Énergie réelle** : toute l'énergie sortie de la batterie, sur les X derniers km ou sur une période, avec le coût de la **sentinelle** isolé
 - ⛽ **Électrique vs thermique** : économie calculée avec tes vrais prix de recharge, face à la voiture essence de ton choix
@@ -30,7 +31,7 @@ la **comparaison avec une voiture thermique** et une navigation pensée pour un 
 
 | | Tableau | Ce qu'il montre |
 |---|---|---|
-| 🏠 | **Accueil** | État de la voiture, chiffres du mois, accès à tous les tableaux |
+| 🏠 | **Accueil** | Carte « Ma voiture », chiffres du mois, accès à tous les tableaux |
 | 📟 | **Vue d'ensemble** | Direct : batterie, recharge en cours, températures, activité |
 | 🕒 | **Chronologie** | Conduite, recharges, stationnements, mises à jour, trous de données |
 | 💤 | **États** | Endormie / éveillée, réveils par jour |
@@ -48,7 +49,7 @@ la **comparaison avec une voiture thermique** et une navigation pensée pour un 
 | 🧛 | **Pertes à l'arrêt** | Ce que la voiture perd garée, arrêt par arrêt |
 | 🌡️ | **Températures** | Extérieur, habitacle, clim voiture garée |
 | 📍 | **Lieux** | Où tu passes du temps |
-| 🗺️ | **Visites** | Carte, pays (avec drapeaux) et villes |
+| 🗺️ | **Visites** | Carte de chaleur de tes routes, pays (avec drapeaux) et villes |
 | 🗓️ | **Statistiques** | Récapitulatif par jour, semaine, mois ou année |
 | ⬆️ | **Mises à jour** | Versions logicielles, autonomie et conso pendant chacune |
 | 🗄️ | **Base de données** | Taille, tables, index, régularité de l'enregistrement |

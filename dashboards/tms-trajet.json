@@ -1367,7 +1367,7 @@
     {
       "id": 20,
       "type": "geomap",
-      "title": "Parcours",
+      "title": "Parcours (couleur = vitesse)",
       "description": "",
       "datasource": {
         "type": "grafana-postgresql-datasource",
@@ -1388,15 +1388,18 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT date AS time, latitude, longitude, speed AS vitesse FROM positions WHERE drive_id = $drive_id ORDER BY date",
+          "rawSql": "SELECT date AS time, latitude, longitude, speed AS \"Vitesse\" FROM positions WHERE drive_id = $drive_id ORDER BY date",
           "refId": "A"
         }
       ],
       "options": {
         "basemap": {
-          "type": "osm-standard",
+          "type": "carto",
           "name": "Fond",
-          "config": {}
+          "config": {
+            "theme": "auto",
+            "showLabels": true
+          }
         },
         "controls": {
           "mouseWheelZoom": true,
@@ -1414,12 +1417,13 @@
               "arrow": 1,
               "style": {
                 "color": {
+                  "field": "Vitesse",
                   "fixed": "#3274D9"
                 },
-                "lineWidth": 3,
-                "opacity": 0.9,
+                "lineWidth": 4,
+                "opacity": 0.95,
                 "size": {
-                  "fixed": 3,
+                  "fixed": 4,
                   "max": 15,
                   "min": 2
                 },
@@ -1468,7 +1472,10 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "velocitykmh",
+          "min": 0,
+          "max": 130
         },
         "overrides": []
       }

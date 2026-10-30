@@ -598,8 +598,8 @@
     {
       "id": 9,
       "type": "geomap",
-      "title": "Carte",
-      "description": "",
+      "title": "Carte de chaleur : où tu roules, et les villes visitées",
+      "description": "Plus c'est chaud, plus tu passes souvent par là. Les points rouges sont les villes où tu t'es arrêté.",
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "TeslaMate"
@@ -619,7 +619,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '2m') AS time, avg(latitude) AS latitude, avg(longitude) AS longitude\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND drive_id IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT round(latitude::numeric, 3)::float AS latitude, round(longitude::numeric, 3)::float AS longitude, count(*) AS \"Passages\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND drive_id IS NOT NULL GROUP BY 1, 2",
           "refId": "A"
         },
         {
@@ -636,9 +636,12 @@
       ],
       "options": {
         "basemap": {
-          "type": "osm-standard",
+          "type": "carto",
           "name": "Fond",
-          "config": {}
+          "config": {
+            "theme": "auto",
+            "showLabels": true
+          }
         },
         "controls": {
           "mouseWheelZoom": true,
@@ -650,25 +653,15 @@
         },
         "layers": [
           {
-            "type": "route",
+            "type": "heatmap",
             "name": "Calque",
             "config": {
-              "arrow": 1,
-              "style": {
-                "color": {
-                  "fixed": "#3274D9"
-                },
-                "lineWidth": 3,
-                "opacity": 0.9,
-                "size": {
-                  "fixed": 3,
-                  "max": 15,
-                  "min": 2
-                },
-                "symbol": {
-                  "fixed": "",
-                  "mode": "fixed"
-                }
+              "blur": 14,
+              "radius": 5,
+              "weight": {
+                "fixed": 1,
+                "max": 1,
+                "min": 0
               }
             },
             "location": {
