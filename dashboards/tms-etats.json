@@ -1,0 +1,1039 @@
+{
+  "uid": "tms-etats",
+  "title": "États",
+  "description": "Quand la voiture dort, se réveille, roule ou recharge.",
+  "tags": [
+    "teslamate-suite",
+    "tesla",
+    "teslamate"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "weekStart": "monday",
+  "refresh": "",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "Aujourd'hui",
+        "from": "now/d",
+        "to": "now/d"
+      },
+      {
+        "display": "Hier",
+        "from": "now-1d/d",
+        "to": "now-1d/d"
+      },
+      {
+        "display": "7 derniers jours",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "Cette semaine",
+        "from": "now/w",
+        "to": "now/w"
+      },
+      {
+        "display": "La semaine dernière",
+        "from": "now-1w/w",
+        "to": "now-1w/w"
+      },
+      {
+        "display": "30 derniers jours",
+        "from": "now-30d",
+        "to": "now"
+      },
+      {
+        "display": "Ce mois-ci",
+        "from": "now/M",
+        "to": "now/M"
+      },
+      {
+        "display": "Le mois dernier",
+        "from": "now-1M/M",
+        "to": "now-1M/M"
+      },
+      {
+        "display": "3 derniers mois",
+        "from": "now-3M",
+        "to": "now"
+      },
+      {
+        "display": "6 derniers mois",
+        "from": "now-6M",
+        "to": "now"
+      },
+      {
+        "display": "12 derniers mois",
+        "from": "now-1y",
+        "to": "now"
+      },
+      {
+        "display": "Cette année",
+        "from": "now/y",
+        "to": "now/y"
+      },
+      {
+        "display": "L'année dernière",
+        "from": "now-1y/y",
+        "to": "now-1y/y"
+      },
+      {
+        "display": "Depuis le début",
+        "from": "now-15y",
+        "to": "now"
+      }
+    ]
+  },
+  "fiscalYearStartMonth": 0,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Suite TeslaMate",
+      "type": "dashboards",
+      "tags": [
+        "teslamate-suite"
+      ],
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false
+    },
+    {
+      "title": "TeslaMate",
+      "type": "link",
+      "url": "${base_url:raw}",
+      "icon": "dashboard",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "car_id",
+        "label": "Voiture",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "hide": 0,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      },
+      {
+        "name": "preferred_range",
+        "label": "preferred_range",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT preferred_range FROM settings LIMIT 1",
+        "definition": "SELECT preferred_range FROM settings LIMIT 1",
+        "hide": 2,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      },
+      {
+        "name": "base_url",
+        "label": "base_url",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT base_url FROM settings LIMIT 1",
+        "definition": "SELECT base_url FROM settings LIMIT 1",
+        "hide": 2,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;flex-wrap:wrap;align-items:center;justify-content:center\"><a href=\"/d/tms-accueil?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">🏠&nbsp;Accueil</a><a href=\"/d/tms-vue?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">📟&nbsp;Vue&nbsp;d'ensemble</a><a href=\"/d/tms-chronologie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">🕒&nbsp;Chronologie</a><a href=\"/d/tms-etats?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C;border:1px solid #5B6E8C;font-weight:600;box-shadow:0 0 0 2px #5B6E8C55;\">💤&nbsp;États</a><span style=\"width:10px\"></span><a href=\"/d/tms-trajets?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🚗&nbsp;Trajets</a><a href=\"/d/tms-stats-conduite?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">📈&nbsp;Stats&nbsp;conduite</a><a href=\"/d/tms-voyage?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🧳&nbsp;Voyage</a><a href=\"/d/tms-kilometrage?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🛣️&nbsp;Kilométrage</a><a href=\"/d/tms-efficacite?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🍃&nbsp;Efficacité</a><span style=\"width:10px\"></span><a href=\"/d/tms-recharges?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">🔌&nbsp;Recharges</a><a href=\"/d/tms-stats-recharge?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">📊&nbsp;Stats&nbsp;recharge</a><a href=\"/d/tm-energie-reelle?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">⚡&nbsp;Énergie&nbsp;réelle</a><span style=\"width:10px\"></span><a href=\"/d/tms-batterie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🔋&nbsp;Santé&nbsp;batterie</a><a href=\"/d/tms-niveau?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🎚️&nbsp;Niveau&nbsp;de&nbsp;charge</a><a href=\"/d/tms-autonomie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">📏&nbsp;Autonomie</a><a href=\"/d/tms-pertes?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🧛&nbsp;Pertes&nbsp;à&nbsp;l'arrêt</a><a href=\"/d/tms-temperatures?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🌡️&nbsp;Températures</a><span style=\"width:10px\"></span><a href=\"/d/tms-lieux?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#1F9FAA33;border:1px solid #1F9FAA;\">📍&nbsp;Lieux</a><a href=\"/d/tms-visites?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#1F9FAA33;border:1px solid #1F9FAA;\">🗺️&nbsp;Visites</a><span style=\"width:10px\"></span><a href=\"/d/tms-statistiques?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">🗓️&nbsp;Statistiques</a><a href=\"/d/tms-mises-a-jour?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">⬆️&nbsp;Mises&nbsp;à&nbsp;jour</a><a href=\"/d/tms-base?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">🗄️&nbsp;Base&nbsp;de&nbsp;données</a></div>"
+      }
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "title": "",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 24,
+        "h": 2
+      },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"background-color:#37475E;border-radius:8px;padding:9px 18px;color:#fff;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.25);\"><b style=\"font-size:16px;letter-spacing:0.3px;\">💤 ÉTATS DE LA VOITURE</b><span style=\"color:rgba(255,255,255,0.88);\">&nbsp;&nbsp;—&nbsp;&nbsp;une voiture qui dort bien consomme 15 à 40 W ; chaque réveil coûte un peu d'énergie</span></div>"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "État actuel",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH w AS (SELECT $__timeFrom()::timestamp AS t0, LEAST($__timeTo()::timestamp, now() AT TIME ZONE 'UTC') AS t1),\nst AS (SELECT x.state, sum(extract(epoch FROM LEAST(COALESCE(x.end_date, w.t1), w.t1) - GREATEST(x.start_date, w.t0))) AS s FROM states x, w WHERE x.car_id = $car_id AND x.start_date < w.t1 AND COALESCE(x.end_date, w.t1) > w.t0 GROUP BY 1)\nSELECT (SELECT state::text FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"État\",\n  (SELECT extract(epoch FROM start_date) * 1000 FROM states WHERE car_id = $car_id ORDER BY start_date DESC LIMIT 1) AS \"Depuis\",\n  (SELECT s FROM st WHERE state = 'asleep') / nullif((SELECT sum(s) FROM st), 0) * 100 AS \"Endormie\",\n  (SELECT count(*) FROM states x, w WHERE x.car_id = $car_id AND x.state = 'online' AND x.start_date BETWEEN w.t0 AND w.t1)\n    / GREATEST(extract(epoch FROM (SELECT t1 - t0 FROM w)) / 86400, 1) AS \"Réveils par jour\",\n  (SELECT count(*) FROM states x, w WHERE x.car_id = $car_id AND x.state = 'offline' AND x.start_date BETWEEN w.t0 AND w.t1) AS \"Hors ligne\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^État$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "string",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#6E7580"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#5B6E8C",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "online": {
+                  "text": "Éveillée",
+                  "color": "#E0752D",
+                  "index": 0
+                },
+                "asleep": {
+                  "text": "Endormie",
+                  "color": "#8F3BB8",
+                  "index": 1
+                },
+                "offline": {
+                  "text": "Hors ligne",
+                  "color": "#6E7580",
+                  "index": 2
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Depuis",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Depuis$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeFromNow",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#5B6E8C",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Temps endormie",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Endormie$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E0752D",
+                "value": null
+              },
+              {
+                "color": "#E0B400",
+                "value": 50
+              },
+              {
+                "color": "#56A64B",
+                "value": 75
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Réveils par jour",
+      "description": "Beaucoup de réveils sans trajet = une appli ou une intégration qui interroge trop souvent la voiture.",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 4,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Réveils\\ par\\ jour$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              },
+              {
+                "color": "#E0B400",
+                "value": 6
+              },
+              {
+                "color": "#E0752D",
+                "value": 12
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Passages hors ligne",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 4,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Hors\\ ligne$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#6E7580",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "state-timeline",
+      "title": "Activité",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH ev AS (\n  SELECT start_date AS t, CASE state WHEN 'online' THEN 5 WHEN 'asleep' THEN 4 ELSE 3 END AS s FROM states WHERE car_id = $car_id AND start_date < $__timeTo()::timestamp AND COALESCE(end_date, now() AT TIME ZONE 'UTC') > $__timeFrom()::timestamp - interval '2 days'\n  UNION ALL SELECT unnest(ARRAY[start_date + interval '1 second', end_date]), unnest(ARRAY[1, 5]) FROM drives WHERE car_id = $car_id AND start_date < $__timeTo()::timestamp AND COALESCE(end_date, now() AT TIME ZONE 'UTC') > $__timeFrom()::timestamp - interval '2 days'\n  UNION ALL SELECT unnest(ARRAY[start_date + interval '1 second', end_date]), unnest(ARRAY[2, 5]) FROM charging_processes WHERE car_id = $car_id AND start_date < $__timeTo()::timestamp AND COALESCE(end_date, now() AT TIME ZONE 'UTC') > $__timeFrom()::timestamp - interval '2 days'\n  UNION ALL SELECT unnest(ARRAY[start_date + interval '1 second', end_date]), unnest(ARRAY[6, 5]) FROM updates WHERE car_id = $car_id AND start_date < $__timeTo()::timestamp AND COALESCE(end_date, now() AT TIME ZONE 'UTC') > $__timeFrom()::timestamp - interval '2 days'\n)\nSELECT t AS time, s AS \"État\" FROM ev WHERE t IS NOT NULL ORDER BY t, s",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "alignValue": "center",
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Conduite",
+                  "color": "#3274D9",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Recharge",
+                  "color": "#56A64B",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Hors ligne",
+                  "color": "#6E7580",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Endormie",
+                  "color": "#8F3BB8",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Éveillée",
+                  "color": "#E0752D",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Mise à jour",
+                  "color": "#C4162A",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#6E7580",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "piechart",
+      "title": "Répartition du temps",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH w AS (SELECT $__timeFrom()::timestamp AS t0, LEAST($__timeTo()::timestamp, now() AT TIME ZONE 'UTC') AS t1),\nst AS (SELECT x.state, sum(extract(epoch FROM LEAST(COALESCE(x.end_date, w.t1), w.t1) - GREATEST(x.start_date, w.t0))) AS s FROM states x, w WHERE x.car_id = $car_id AND x.start_date < w.t1 AND COALESCE(x.end_date, w.t1) > w.t0 GROUP BY 1),\ndr AS (SELECT sum(extract(epoch FROM LEAST(COALESCE(x.end_date, w.t1), w.t1) - GREATEST(x.start_date, w.t0))) AS s FROM drives x, w WHERE x.car_id = $car_id AND x.start_date < w.t1 AND COALESCE(x.end_date, w.t1) > w.t0),\nch AS (SELECT sum(extract(epoch FROM LEAST(COALESCE(x.end_date, w.t1), w.t1) - GREATEST(x.start_date, w.t0))) AS s FROM charging_processes x, w WHERE x.car_id = $car_id AND x.start_date < w.t1 AND COALESCE(x.end_date, w.t1) > w.t0)\nSELECT 'Endormie' AS metric, (SELECT s FROM st WHERE state = 'asleep') AS value\nUNION ALL SELECT 'Hors ligne', (SELECT s FROM st WHERE state = 'offline')\nUNION ALL SELECT 'Conduite', (SELECT s FROM dr)\nUNION ALL SELECT 'Recharge', (SELECT s FROM ch)\nUNION ALL SELECT 'Éveillée garée', GREATEST((SELECT s FROM st WHERE state = 'online') - COALESCE((SELECT s FROM dr), 0) - COALESCE((SELECT s FROM ch), 0), 0)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Endormie"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8F3BB8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Hors ligne"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#6E7580"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Conduite"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3274D9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Recharge"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#56A64B"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Éveillée garée"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#E0752D"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Réveils par jour",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 13,
+        "w": 16,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('day', timezone('UTC', start_date), '$__timezone') AS time, count(*) AS \"Réveils\"\nFROM states WHERE car_id = $car_id AND state = 'online' AND $__timeFilter(start_date) GROUP BY 1 ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": true,
+            "axisLabel": "",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Réveils"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#E0752D"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "hidden",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Derniers changements d'état",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT start_date AS \"Début\", end_date AS \"Fin\", CASE state WHEN 'online' THEN 'Éveillée' WHEN 'asleep' THEN 'Endormie' ELSE 'Hors ligne' END AS \"État\",\n  extract(epoch FROM COALESCE(end_date, now() AT TIME ZONE 'UTC') - start_date) AS \"Durée\"\nFROM states WHERE car_id = $car_id AND $__timeFilter(start_date) ORDER BY start_date DESC LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": false
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Début"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fin"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Durée"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "État"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Éveillée": {
+                        "color": "#E0752D",
+                        "index": 0
+                      },
+                      "Endormie": {
+                        "color": "#A352CC",
+                        "index": 1
+                      },
+                      "Hors ligne": {
+                        "color": "#6E7580",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [],
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [],
+          "countRows": false
+        }
+      }
+    }
+  ]
+}

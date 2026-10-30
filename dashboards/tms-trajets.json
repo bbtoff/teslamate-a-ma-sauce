@@ -1,0 +1,1390 @@
+{
+  "uid": "tms-trajets",
+  "title": "Trajets",
+  "description": "Tous tes trajets : distance, conso en kWh/100 km, vitesse, dénivelé. Clique une ligne pour le détail.",
+  "tags": [
+    "teslamate-suite",
+    "tesla",
+    "teslamate"
+  ],
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "weekStart": "monday",
+  "refresh": "",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "Aujourd'hui",
+        "from": "now/d",
+        "to": "now/d"
+      },
+      {
+        "display": "Hier",
+        "from": "now-1d/d",
+        "to": "now-1d/d"
+      },
+      {
+        "display": "7 derniers jours",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "Cette semaine",
+        "from": "now/w",
+        "to": "now/w"
+      },
+      {
+        "display": "La semaine dernière",
+        "from": "now-1w/w",
+        "to": "now-1w/w"
+      },
+      {
+        "display": "30 derniers jours",
+        "from": "now-30d",
+        "to": "now"
+      },
+      {
+        "display": "Ce mois-ci",
+        "from": "now/M",
+        "to": "now/M"
+      },
+      {
+        "display": "Le mois dernier",
+        "from": "now-1M/M",
+        "to": "now-1M/M"
+      },
+      {
+        "display": "3 derniers mois",
+        "from": "now-3M",
+        "to": "now"
+      },
+      {
+        "display": "6 derniers mois",
+        "from": "now-6M",
+        "to": "now"
+      },
+      {
+        "display": "12 derniers mois",
+        "from": "now-1y",
+        "to": "now"
+      },
+      {
+        "display": "Cette année",
+        "from": "now/y",
+        "to": "now/y"
+      },
+      {
+        "display": "L'année dernière",
+        "from": "now-1y/y",
+        "to": "now-1y/y"
+      },
+      {
+        "display": "Depuis le début",
+        "from": "now-15y",
+        "to": "now"
+      }
+    ]
+  },
+  "fiscalYearStartMonth": 0,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Suite TeslaMate",
+      "type": "dashboards",
+      "tags": [
+        "teslamate-suite"
+      ],
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": false,
+      "targetBlank": false
+    },
+    {
+      "title": "TeslaMate",
+      "type": "link",
+      "url": "${base_url:raw}",
+      "icon": "dashboard",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "car_id",
+        "label": "Voiture",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "hide": 0,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      },
+      {
+        "name": "preferred_range",
+        "label": "preferred_range",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT preferred_range FROM settings LIMIT 1",
+        "definition": "SELECT preferred_range FROM settings LIMIT 1",
+        "hide": 2,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      },
+      {
+        "name": "base_url",
+        "label": "base_url",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "TeslaMate"
+        },
+        "query": "SELECT base_url FROM settings LIMIT 1",
+        "definition": "SELECT base_url FROM settings LIMIT 1",
+        "hide": 2,
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "sort": 0,
+        "options": []
+      },
+      {
+        "name": "min_km",
+        "label": "Distance mini (km)",
+        "type": "textbox",
+        "hide": 0,
+        "query": "0",
+        "current": {
+          "selected": true,
+          "text": "0",
+          "value": "0"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "0",
+            "value": "0"
+          }
+        ]
+      },
+      {
+        "name": "lieu",
+        "label": "Lieu contient",
+        "type": "textbox",
+        "hide": 0,
+        "query": "",
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;flex-wrap:wrap;align-items:center;justify-content:center\"><a href=\"/d/tms-accueil?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">🏠&nbsp;Accueil</a><a href=\"/d/tms-vue?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">📟&nbsp;Vue&nbsp;d'ensemble</a><a href=\"/d/tms-chronologie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">🕒&nbsp;Chronologie</a><a href=\"/d/tms-etats?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#5B6E8C33;border:1px solid #5B6E8C;\">💤&nbsp;États</a><span style=\"width:10px\"></span><a href=\"/d/tms-trajets?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D9;border:1px solid #3274D9;font-weight:600;box-shadow:0 0 0 2px #3274D955;\">🚗&nbsp;Trajets</a><a href=\"/d/tms-stats-conduite?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">📈&nbsp;Stats&nbsp;conduite</a><a href=\"/d/tms-voyage?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🧳&nbsp;Voyage</a><a href=\"/d/tms-kilometrage?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🛣️&nbsp;Kilométrage</a><a href=\"/d/tms-efficacite?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#3274D933;border:1px solid #3274D9;\">🍃&nbsp;Efficacité</a><span style=\"width:10px\"></span><a href=\"/d/tms-recharges?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">🔌&nbsp;Recharges</a><a href=\"/d/tms-stats-recharge?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">📊&nbsp;Stats&nbsp;recharge</a><a href=\"/d/tm-energie-reelle?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#56A64B33;border:1px solid #56A64B;\">⚡&nbsp;Énergie&nbsp;réelle</a><span style=\"width:10px\"></span><a href=\"/d/tms-batterie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🔋&nbsp;Santé&nbsp;batterie</a><a href=\"/d/tms-niveau?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🎚️&nbsp;Niveau&nbsp;de&nbsp;charge</a><a href=\"/d/tms-autonomie?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">📏&nbsp;Autonomie</a><a href=\"/d/tms-pertes?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🧛&nbsp;Pertes&nbsp;à&nbsp;l'arrêt</a><a href=\"/d/tms-temperatures?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#A352CC33;border:1px solid #A352CC;\">🌡️&nbsp;Températures</a><span style=\"width:10px\"></span><a href=\"/d/tms-lieux?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#1F9FAA33;border:1px solid #1F9FAA;\">📍&nbsp;Lieux</a><a href=\"/d/tms-visites?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#1F9FAA33;border:1px solid #1F9FAA;\">🗺️&nbsp;Visites</a><span style=\"width:10px\"></span><a href=\"/d/tms-statistiques?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">🗓️&nbsp;Statistiques</a><a href=\"/d/tms-mises-a-jour?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">⬆️&nbsp;Mises&nbsp;à&nbsp;jour</a><a href=\"/d/tms-base?${car_id:queryparam}\" style=\"display:inline-block;margin:2px 3px;padding:3px 10px;border-radius:14px;font-size:12px;text-decoration:none;color:#fff;background:#6E758033;border:1px solid #6E7580;\">🗄️&nbsp;Base&nbsp;de&nbsp;données</a></div>"
+      }
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "title": "",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 24,
+        "h": 2
+      },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"background-color:#1F60C4;border-radius:8px;padding:9px 18px;color:#fff;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.25);\"><b style=\"font-size:16px;letter-spacing:0.3px;\">🚗 TRAJETS DE LA PÉRIODE</b><span style=\"color:rgba(255,255,255,0.88);\">&nbsp;&nbsp;—&nbsp;&nbsp;filtres en haut : distance minimale et texte dans le lieu de départ ou d'arrivée</span></div>"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Trajets",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Trajets\", sum(d.distance) AS \"Distance\", sum(d.duration_min) * 60 AS \"Durée\",\n  sum((d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency) AS \"Énergie\", sum((d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency) * 100 / nullif(sum(d.distance), 0) AS \"Conso\",\n  sum(d.distance) / nullif(sum(d.duration_min), 0) * 60 AS \"Vitesse moyenne\", max(d.speed_max) AS \"Vitesse max\",\n  sum(d.ascent) AS \"Dénivelé\"\nFROM drives d JOIN cars car ON car.id = d.car_id\n  LEFT JOIN addresses sa ON sa.id = d.start_address_id LEFT JOIN addresses ea ON ea.id = d.end_address_id\n  LEFT JOIN geofences sg ON sg.id = d.start_geofence_id LEFT JOIN geofences eg ON eg.id = d.end_geofence_id\n  LEFT JOIN positions sp ON sp.id = d.start_position_id LEFT JOIN positions ep ON ep.id = d.end_position_id WHERE d.car_id = $car_id AND $__timeFilter(d.start_date) AND d.end_date IS NOT NULL AND COALESCE(d.distance, 0) >= COALESCE(NULLIF(regexp_replace(replace(${min_km:sqlstring}, ',', '.'), '[^0-9.]', '', 'g'), '')::numeric, 0)\n    AND (${lieu:sqlstring} = '' OR COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%' OR COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%')",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Trajets$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Distance",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 3,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Distance$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthkm",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Temps au volant",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Durée$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Énergie",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 9,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Énergie$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Conso moyenne",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Conso$/",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix: kWh/100 km",
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              },
+              {
+                "color": "#E0B400",
+                "value": 15
+              },
+              {
+                "color": "#E0752D",
+                "value": 18
+              },
+              {
+                "color": "#C4162A",
+                "value": 22
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Vitesse moyenne",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Vitesse\\ moyenne$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocitykmh",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Vitesse max",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Vitesse\\ max$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocitykmh",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Dénivelé cumulé",
+      "description": "",
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Dashboard --"
+      },
+      "gridPos": {
+        "x": 21,
+        "y": 4,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Dashboard --"
+          },
+          "panelId": 3,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Dénivelé$/",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "wideLayout": true,
+        "orientation": "auto",
+        "showPercentChange": false
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthm",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3274D9",
+                "value": null
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Liste des trajets — clique la date pour le détail",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 15
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT d.id, floor(extract(epoch FROM d.start_date) * 1000) AS start_ms, floor(extract(epoch FROM d.end_date) * 1000) + 1000 AS end_ms,\n  d.start_date AS \"Date\", COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) AS \"Départ\", COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) AS \"Arrivée\",\n  d.duration_min * 60 AS \"Durée\", d.distance AS \"Distance\",\n  sp.battery_level || ' → ' || ep.battery_level || ' %' AS \"Batterie\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency AS \"Énergie\",\n  (d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency * 100 / nullif(d.distance, 0) AS \"Conso\",\n  d.distance / nullif(d.duration_min, 0) * 60 AS \"Vit. moy.\", d.speed_max AS \"Vit. max\", d.outside_temp_avg AS \"Temp. ext.\",\n  d.ascent AS \"Montée\"\nFROM drives d JOIN cars car ON car.id = d.car_id\n  LEFT JOIN addresses sa ON sa.id = d.start_address_id LEFT JOIN addresses ea ON ea.id = d.end_address_id\n  LEFT JOIN geofences sg ON sg.id = d.start_geofence_id LEFT JOIN geofences eg ON eg.id = d.end_geofence_id\n  LEFT JOIN positions sp ON sp.id = d.start_position_id LEFT JOIN positions ep ON ep.id = d.end_position_id WHERE d.car_id = $car_id AND $__timeFilter(d.start_date) AND d.end_date IS NOT NULL AND COALESCE(d.distance, 0) >= COALESCE(NULLIF(regexp_replace(replace(${min_km:sqlstring}, ',', '.'), '[^0-9.]', '', 'g'), '')::numeric, 0)\n    AND (${lieu:sqlstring} = '' OR COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%' OR COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%') ORDER BY d.start_date DESC LIMIT 1000",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": false
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "id"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "start_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "end_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              },
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Date"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Voir le détail du trajet",
+                    "url": "/d/tms-trajet?from=${__data.fields.start_ms.numeric}&to=${__data.fields.end_ms.numeric}&${car_id:queryparam}&var-drive_id=${__data.fields.id.numeric}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Départ"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Arrivée"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Durée"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distance"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "lengthkm"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Énergie"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "kwatth"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Conso"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "suffix: kWh/100 km"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#56A64B",
+                      "value": null
+                    },
+                    {
+                      "color": "#E0B400",
+                      "value": 15
+                    },
+                    {
+                      "color": "#E0752D",
+                      "value": 18
+                    },
+                    {
+                      "color": "#C4162A",
+                      "value": 22
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vit. moy."
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vit. max"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "velocitykmh"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Temp. ext."
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#5794F2",
+                      "value": null
+                    },
+                    {
+                      "color": "#1F9FAA",
+                      "value": 5
+                    },
+                    {
+                      "color": "#56A64B",
+                      "value": 15
+                    },
+                    {
+                      "color": "#E0752D",
+                      "value": 25
+                    },
+                    {
+                      "color": "#C4162A",
+                      "value": 32
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Montée"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "lengthm"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distance"
+            },
+            "properties": [
+              {
+                "id": "custom.footer.reducers",
+                "value": [
+                  "sum"
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Énergie"
+            },
+            "properties": [
+              {
+                "id": "custom.footer.reducers",
+                "value": [
+                  "sum"
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Durée"
+            },
+            "properties": [
+              {
+                "id": "custom.footer.reducers",
+                "value": [
+                  "sum"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "Distance",
+            "Énergie",
+            "Durée"
+          ],
+          "countRows": false
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Kilomètres par jour",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 16,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('day', timezone('UTC', d.start_date), '$__timezone') AS time, sum(d.distance) AS \"Distance\",\n  sum((d.start_${preferred_range}_range_km - d.end_${preferred_range}_range_km) * car.efficiency) * 100 / nullif(sum(d.distance), 0) AS \"Conso\"\nFROM drives d JOIN cars car ON car.id = d.car_id\n  LEFT JOIN addresses sa ON sa.id = d.start_address_id LEFT JOIN addresses ea ON ea.id = d.end_address_id\n  LEFT JOIN geofences sg ON sg.id = d.start_geofence_id LEFT JOIN geofences eg ON eg.id = d.end_geofence_id\n  LEFT JOIN positions sp ON sp.id = d.start_position_id LEFT JOIN positions ep ON ep.id = d.end_position_id WHERE d.car_id = $car_id AND $__timeFilter(d.start_date) AND d.end_date IS NOT NULL AND COALESCE(d.distance, 0) >= COALESCE(NULLIF(regexp_replace(replace(${min_km:sqlstring}, ',', '.'), '[^0-9.]', '', 'g'), '')::numeric, 0)\n    AND (${lieu:sqlstring} = '' OR COALESCE(sg.name, CONCAT_WS(', ', COALESCE(sa.name, NULLIF(CONCAT_WS(' ', sa.road, sa.house_number), '')), COALESCE(sa.city, sa.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%' OR COALESCE(eg.name, CONCAT_WS(', ', COALESCE(ea.name, NULLIF(CONCAT_WS(' ', ea.road, ea.house_number), '')), COALESCE(ea.city, ea.neighbourhood))) ILIKE '%' || ${lieu:sqlstring} || '%') GROUP BY 1 ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthkm",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 5,
+            "spanNulls": true,
+            "axisLabel": "",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distance"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#3274D9"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Conso"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "suffix: kWh/100 km"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.showPoints",
+                "value": "always"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#C4162A"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Trajets non clôturés",
+      "description": "Trajets que TeslaMate n'a pas pu terminer (coupure, redémarrage…). Normalement vide.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "TeslaMate"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 23,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "TeslaMate"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT id AS \"N°\", start_date AS \"Début\", distance AS \"Distance\", duration_min * 60 AS \"Durée\"\nFROM drives WHERE car_id = $car_id AND end_date IS NULL ORDER BY start_date DESC",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "filterable": false
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Début"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distance"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "lengthkm"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Durée"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [],
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [],
+          "countRows": false
+        }
+      }
+    }
+  ]
+}
