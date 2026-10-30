@@ -20,11 +20,11 @@ la **comparaison avec une voiture thermique** et une navigation pensée pour un 
 
 ## 📸 Aperçu
 
-| Énergie réelle & recharges | Détail d'une recharge |
+| Énergie réelle & recharges | Recharges |
 |---|---|
-| ![Énergie réelle](docs/captures/energie-reelle.png) | ![Recharge](docs/captures/recharge.png) |
-| **Détail d'un trajet** | **Pertes à l'arrêt** |
-| ![Trajet](docs/captures/trajet.png) | ![Pertes à l'arrêt](docs/captures/pertes.png) |
+| ![Énergie réelle](docs/captures/energie-reelle.png) | ![Recharges](docs/captures/recharges.png) |
+| **Trajets** | **Pertes à l'arrêt** |
+| ![Trajets](docs/captures/trajets.png) | ![Pertes à l'arrêt](docs/captures/pertes.png) |
 
 ## 📚 Les tableaux
 

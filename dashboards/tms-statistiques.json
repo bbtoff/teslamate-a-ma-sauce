@@ -645,19 +645,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "Trajets",
-            "Km",
-            "Au volant",
-            "Recharges",
-            "kWh ajoutés",
-            "kWh prise",
-            "Coût"
-          ],
+          "fields": [],
           "countRows": false
         }
       }

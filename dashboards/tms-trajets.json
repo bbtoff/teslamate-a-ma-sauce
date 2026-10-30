@@ -1149,15 +1149,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "Distance",
-            "Énergie",
-            "Durée"
-          ],
+          "fields": [],
           "countRows": false
         }
       }

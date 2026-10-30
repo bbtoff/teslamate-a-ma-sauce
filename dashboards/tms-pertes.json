@@ -876,15 +876,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "kWh",
-            "Km perdus",
-            "Durée"
-          ],
+          "fields": [],
           "countRows": false
         }
       }

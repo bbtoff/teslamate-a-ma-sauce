@@ -1252,16 +1252,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "Ajouté",
-            "Prise",
-            "Durée",
-            "Coût"
-          ],
+          "fields": [],
           "countRows": false
         }
       }

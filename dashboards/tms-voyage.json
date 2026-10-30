@@ -1430,14 +1430,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "Km",
-            "Durée"
-          ],
+          "fields": [],
           "countRows": false
         }
       }
@@ -1701,15 +1698,11 @@
         "cellHeight": "sm",
         "sortBy": [],
         "footer": {
-          "show": true,
+          "show": false,
           "reducer": [
             "sum"
           ],
-          "fields": [
-            "kWh",
-            "Durée",
-            "Coût"
-          ],
+          "fields": [],
           "countRows": false
         }
       }
