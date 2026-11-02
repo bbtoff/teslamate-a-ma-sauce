@@ -140,6 +140,14 @@ Avec docker-compose, un simple `git pull` suffit (voir plus haut).
 - **Superchargeurs** : TeslaMate ne connaît souvent que l'énergie entrée dans la batterie, donc les pertes en DC ne sont pas comptées.
 - Le rapport fiscal néerlandais des tableaux d'origine n'est pas repris.
 
+## 👋 À propos
+
+Je ne suis pas développeur, juste un propriétaire de Tesla qui aime comprendre sa voiture et partager ses idées.
+J'imagine les tableaux et je les teste tous les jours avec ma voiture. Pour la partie codage (requêtes SQL, tableaux Grafana, scripts d'import), je m'appuie sur [Claude](https://claude.ai), l'IA d'Anthropic.
+
+Je réponds donc volontiers aux idées et aux retours, mais je peux être moins à l'aise sur les questions très techniques.
+Les développeurs qui veulent améliorer le projet sont les bienvenus : les [pull requests](../../pulls) sont ouvertes !
+
 ## 🙏 Crédits
 
 Construit sur l'excellent projet [TeslaMate](https://github.com/teslamate-org/teslamate) et sur ses tableaux de bord d'origine, dont certaines requêtes ont servi de base.
