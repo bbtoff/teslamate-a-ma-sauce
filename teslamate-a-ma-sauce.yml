@@ -1,13 +1,15 @@
+# Chargement automatique des tableaux par Grafana (installation docker-compose).
+# Voir la section « Avec docker-compose » du README.
 apiVersion: 1
 
 providers:
-- name: 'TeslamateAmaSauce'
-  orgId: 1
-  folder: TeslaMate A Ma Sauce
-  folderUid: jchmTmCuGrDb
-  type: file
-  disableDeletion: false
-  allowUiUpdates: true
-  updateIntervalSeconds: 86400
-  options:
-    path: /teslamate-a-ma-sauce
+  - name: teslamate-a-ma-sauce
+    orgId: 1
+    folder: TeslaMate — à ma sauce
+    folderUid: teslamate-a-ma-sauce
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 60
+    options:
+      path: /teslamate-a-ma-sauce

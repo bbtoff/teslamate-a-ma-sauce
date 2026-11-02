@@ -80,35 +80,39 @@ Si ta source de données n'a pas l'identifiant `TeslaMate`, ajoute le sien à la
 
 4. Ouvre `http://IP-DU-GRAFANA:3000/d/tms-accueil`, puis désactive le jeton.
 
-**Docker**
+### Avec docker-compose (sans jeton)
 
-Si vous avez installé Teslamate avec docker comme indiqué (dans leur documentation)[https://docs.teslamate.org/docs/installation/docker], vous pouvez integrer directement ces dashboard facilement
+Si tu as installé TeslaMate avec docker-compose, comme le recommande [sa documentation](https://docs.teslamate.org/docs/installation/docker), Grafana peut charger les tableaux tout seul à chaque démarrage. *Méthode proposée par [@stawen](https://github.com/stawen).*
 
-Récuperer le `Zip` ou fait un `Git clone` du projet au meme endroit que votre `docker-compose.yml` de teslamate
+1. Dans le dossier qui contient ton `docker-compose.yml`, récupère le projet :
 
-Dans la suite, je pars du principe que vous avez mis le dossier `tesla-a-ma-sauce/` au meme niveau de votre `docker-compose.yml` et que le repertoire de travail est `/home/rpi`
-
-Ajouter dans votre `docker-compose.yml` au niveau du service grafana
-
-`sudo nano docker-compose.yml`
-
-```yml
-...
-  grafana:
-    ...
-    volumes:
-      - teslamate-grafana-data:/var/lib/grafana
-      # Ligne à rajouter pour les DashBoard Tesla-a-ma-sauce
-      - /home/rpi/teslamate-a-ma-sauce/teslamate-a-ma-sauce.yml:/etc/grafana/provisioning/dashboards/teslamate-a-ma-sauce.yml
-      - /home/rpi/teslamate-a-ma-sauce/dashboards:/teslamate-a-ma-sauce
-    
-...
+```sh
+git clone https://github.com/bbtoff/teslamate-a-ma-sauce.git
 ```
 
-Relancer la partie grafana de TeslaMate
+2. Ajoute ces deux lignes dans la partie `volumes` du service `grafana` de ton `docker-compose.yml` :
 
-`sudo docker compose -f docker-compose.yml up -d`
+```yml
+  grafana:
+    # ...
+    volumes:
+      - teslamate-grafana-data:/var/lib/grafana
+      # TeslaMate à ma sauce
+      - ./teslamate-a-ma-sauce/teslamate-a-ma-sauce.yml:/etc/grafana/provisioning/dashboards/teslamate-a-ma-sauce.yml:ro
+      - ./teslamate-a-ma-sauce/dashboards:/teslamate-a-ma-sauce:ro
+```
 
+3. Relance Grafana :
+
+```sh
+docker compose up -d grafana
+```
+
+Les tableaux apparaissent dans le dossier **« TeslaMate — à ma sauce »**, le même que celui des scripts d'import.
+
+**Mise à jour** : `git -C teslamate-a-ma-sauce pull`. Grafana prend en compte les nouveaux fichiers dans la minute.
+
+> Si tu as modifié un tableau dans Grafana, ta modification est remplacée à la prochaine mise à jour du fichier. Pour garder ta version, enregistre-la sous un autre nom (**Enregistrer sous**).
 
 ### Manuelle
 
@@ -117,6 +121,7 @@ Grafana → **Tableaux de bord → Nouveau → Importer**, puis importe chaque f
 ### Mise à jour
 
 Relance la même commande avec la nouvelle version : les tableaux sont remplacés à leur place, sans doublons.
+Avec docker-compose, un simple `git pull` suffit (voir plus haut).
 
 ## ⚙️ Réglages utiles
 
