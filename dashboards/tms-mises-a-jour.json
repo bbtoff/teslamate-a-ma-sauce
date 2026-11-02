@@ -160,8 +160,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 0,
         "refresh": 1,
         "multi": false,
@@ -681,7 +681,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND battery_level > 10 GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],

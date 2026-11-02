@@ -140,8 +140,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 0,
         "refresh": 1,
         "multi": false,
@@ -244,7 +244,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT min(outside_temp) AS \"Ext min\", avg(outside_temp) AS \"Ext moy\", max(outside_temp) AS \"Ext max\",\n  min(inside_temp) AS \"Int min\", avg(inside_temp) AS \"Int moy\", max(inside_temp) AS \"Int max\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date)",
+          "rawSql": "SELECT min(outside_temp) AS \"Ext min\", avg(outside_temp) AS \"Ext moy\", max(outside_temp) AS \"Ext max\",\n  min(inside_temp) AS \"Int min\", avg(inside_temp) AS \"Int moy\", max(inside_temp) AS \"Int max\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL",
           "refId": "A"
         }
       ],
@@ -715,7 +715,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroupAlias(date, $__interval), avg(outside_temp) AS \"Extérieur\", avg(inside_temp) AS \"Habitacle\", avg(driver_temp_setting) AS \"Consigne\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND (outside_temp IS NOT NULL OR inside_temp IS NOT NULL) GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroupAlias(date, $__interval), avg(outside_temp) AS \"Extérieur\", avg(inside_temp) AS \"Habitacle\", avg(driver_temp_setting) AS \"Consigne\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND (outside_temp IS NOT NULL OR inside_temp IS NOT NULL) GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],
@@ -836,7 +836,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, min(outside_temp) AS \"Mini\", avg(outside_temp) AS \"Moyenne\", max(outside_temp) AS \"Maxi\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND outside_temp IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, min(outside_temp) AS \"Mini\", avg(outside_temp) AS \"Moyenne\", max(outside_temp) AS \"Maxi\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND outside_temp IS NOT NULL GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],
@@ -963,7 +963,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "WITH s AS (SELECT date, is_climate_on, LEAST(extract(epoch FROM lead(date) OVER (ORDER BY date) - date), 900) AS dt\n           FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND drive_id IS NULL)\nSELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, sum(dt) FILTER (WHERE is_climate_on) / 3600 AS \"Heures\"\nFROM s GROUP BY 1 ORDER BY 1",
+          "rawSql": "WITH s AS (SELECT date, is_climate_on, LEAST(extract(epoch FROM lead(date) OVER (ORDER BY date) - date), 900) AS dt\n           FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND drive_id IS NULL AND ideal_battery_range_km IS NOT NULL)\nSELECT date_trunc('day', timezone('UTC', date), '$__timezone') AS time, sum(dt) FILTER (WHERE is_climate_on) / 3600 AS \"Heures\"\nFROM s GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],

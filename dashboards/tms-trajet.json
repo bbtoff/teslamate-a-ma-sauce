@@ -174,8 +174,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 2,
         "refresh": 1,
         "multi": false,

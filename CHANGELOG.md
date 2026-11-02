@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 1.4 — 02/11/2026
+- Installation possible avec docker-compose, sans jeton ni script (proposée par @stawen)
+- Requêtes nettement plus rapides, pensées pour les petites machines (Raspberry Pi) : elles utilisent désormais les index de TeslaMate. Sur une base de test de 2 millions de positions, le temps de calcul de l'ensemble des tableaux est divisé par 5 environ
+- Correction : l'autonomie à 100 % (Mises à jour) pouvait chuter certains jours à cause des positions enregistrées en mode streaming
+- Suppression d'un doublon du tableau Énergie réelle dans le dossier `dashboards/`
+
 ## 1.3 — 30/10/2026
 - Accueil : nouvelle carte « Ma voiture » (panneau Canvas) avec l'état, la batterie, l'autonomie, les températures, le lieu, la dernière recharge et la version logicielle
 - Cartes en fond CARTO, sombre ou clair selon le thème de Grafana

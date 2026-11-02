@@ -140,8 +140,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 0,
         "refresh": 1,
         "multi": false,
@@ -244,7 +244,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH s AS (SELECT battery_level AS b, extract(epoch FROM lead(date) OVER (ORDER BY date) - date) AS dt\n      FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND battery_level IS NOT NULL)\nSELECT sum(b * dt) / nullif(sum(dt), 0) AS \"Moyenne\", sum(dt) FILTER (WHERE b BETWEEN 20 AND 80) / nullif(sum(dt), 0) * 100 AS \"Entre 20 et 80\",\n  sum(dt) FILTER (WHERE b > 90) / nullif(sum(dt), 0) * 100 AS \"Au-dessus de 90\", sum(dt) FILTER (WHERE b < 20) / nullif(sum(dt), 0) * 100 AS \"Sous 20\"\nFROM s WHERE dt < 172800",
+          "rawSql": "WITH s AS (SELECT battery_level AS b, extract(epoch FROM lead(date) OVER (ORDER BY date) - date) AS dt\n      FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL)\nSELECT sum(b * dt) / nullif(sum(dt), 0) AS \"Moyenne\", sum(dt) FILTER (WHERE b BETWEEN 20 AND 80) / nullif(sum(dt), 0) * 100 AS \"Entre 20 et 80\",\n  sum(dt) FILTER (WHERE b > 90) / nullif(sum(dt), 0) * 100 AS \"Au-dessus de 90\", sum(dt) FILTER (WHERE b < 20) / nullif(sum(dt), 0) * 100 AS \"Sous 20\"\nFROM s WHERE dt < 172800",
           "refId": "A"
         }
       ],
@@ -531,7 +531,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroupAlias(date, '10m'), avg(battery_level) AS \"Batterie\", avg(usable_battery_level) AS \"Utilisable\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND battery_level IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroupAlias(date, '10m'), avg(battery_level) AS \"Batterie\", avg(usable_battery_level) AS \"Utilisable\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL GROUP BY 1 ORDER BY 1",
           "refId": "A"
         }
       ],
@@ -649,7 +649,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH s AS (SELECT battery_level AS b, extract(epoch FROM lead(date) OVER (ORDER BY date) - date) AS dt\n      FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND battery_level IS NOT NULL)\nSELECT (floor(LEAST(b, 99) / 10) * 10)::int || '–' || (floor(LEAST(b, 99) / 10) * 10 + 10)::int || ' %' AS \"Niveau\", sum(dt) / 3600 AS \"Heures\"\nFROM s WHERE dt < 172800 GROUP BY floor(LEAST(b, 99) / 10) ORDER BY floor(LEAST(b, 99) / 10)",
+          "rawSql": "WITH s AS (SELECT battery_level AS b, extract(epoch FROM lead(date) OVER (ORDER BY date) - date) AS dt\n      FROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL)\nSELECT (floor(LEAST(b, 99) / 10) * 10)::int || '–' || (floor(LEAST(b, 99) / 10) * 10 + 10)::int || ' %' AS \"Niveau\", sum(dt) / 3600 AS \"Heures\"\nFROM s WHERE dt < 172800 GROUP BY floor(LEAST(b, 99) / 10) ORDER BY floor(LEAST(b, 99) / 10)",
           "refId": "A"
         }
       ],

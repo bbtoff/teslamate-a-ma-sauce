@@ -140,8 +140,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 0,
         "refresh": 1,
         "multi": false,
@@ -884,7 +884,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH p AS (SELECT speed, extract(epoch FROM lead(date) OVER (PARTITION BY drive_id ORDER BY date) - date) AS s\n           FROM positions WHERE car_id = $car_id AND drive_id IS NOT NULL AND $__timeFilter(date))\nSELECT (floor(speed / 10) * 10)::int || '' AS \"Vitesse (km/h)\", sum(s) * 100 / sum(sum(s)) OVER () AS \"Part du temps\"\nFROM p WHERE speed > 0 AND s < 600 GROUP BY floor(speed / 10) ORDER BY floor(speed / 10)",
+          "rawSql": "WITH p AS (SELECT drive_id, floor(speed / 10) AS b, count(*) AS n FROM positions\n           WHERE car_id = $car_id AND drive_id IS NOT NULL AND $__timeFilter(date) AND speed > 0 GROUP BY 1, 2),\nw AS (SELECT p.b, p.n::float / sum(p.n) OVER (PARTITION BY p.drive_id) * d.duration_min AS m FROM p JOIN drives d ON d.id = p.drive_id)\nSELECT (b * 10)::int || '' AS \"Vitesse (km/h)\", sum(m) * 100 / sum(sum(m)) OVER () AS \"Part du temps\"\nFROM w GROUP BY b ORDER BY b",
           "refId": "A"
         }
       ],

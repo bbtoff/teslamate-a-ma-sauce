@@ -160,8 +160,8 @@
           "type": "grafana-postgresql-datasource",
           "uid": "TeslaMate"
         },
-        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
-        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "query": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
+        "definition": "SELECT __value, __text FROM (SELECT c.id AS __value, COALESCE(c.name, 'VIN ' || c.vin, 'Voiture ' || c.id) AS __text, (SELECT max(p.date) FROM positions p WHERE p.car_id = c.id AND p.ideal_battery_range_km IS NOT NULL) AS last_seen FROM cars c) x ORDER BY last_seen DESC NULLS LAST, __value DESC",
         "hide": 0,
         "refresh": 1,
         "multi": false,
@@ -264,7 +264,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH d AS (SELECT date_trunc('day', date) AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"r\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1)\nSELECT (SELECT r FROM d ORDER BY time DESC LIMIT 1) AS \"Actuelle\", max(r) AS \"Plus haute\", min(r) AS \"Plus basse\",\n  ((SELECT r FROM d ORDER BY time DESC LIMIT 1) / nullif((SELECT r FROM d ORDER BY time LIMIT 1), 0) - 1) * 100 AS \"Évolution\"\nFROM d",
+          "rawSql": "WITH d AS (SELECT date_trunc('day', date) AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"r\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1)\nSELECT (SELECT r FROM d ORDER BY time DESC LIMIT 1) AS \"Actuelle\", max(r) AS \"Plus haute\", min(r) AS \"Plus basse\",\n  ((SELECT r FROM d ORDER BY time DESC LIMIT 1) / nullif((SELECT r FROM d ORDER BY time LIMIT 1), 0) - 1) * 100 AS \"Évolution\"\nFROM d",
           "refId": "A"
         }
       ],
@@ -523,7 +523,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1 ORDER BY 1",
           "refId": "A"
         },
         {
@@ -534,7 +534,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, max(odometer) AS \"Odomètre\" FROM positions\nWHERE car_id = $car_id AND $__timeFilter(date) GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, max(odometer) AS \"Odomètre\" FROM positions\nWHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL GROUP BY 1 ORDER BY 1",
           "refId": "B"
         }
       ],
@@ -652,7 +652,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, sum(${preferred_range}_battery_range_km) / nullif(sum(COALESCE(usable_battery_level, battery_level)), 0) * 100 AS \"Autonomie à 100 %\"\nFROM positions WHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL AND ${preferred_range}_battery_range_km IS NOT NULL AND battery_level > 10 GROUP BY 1 ORDER BY 1",
           "refId": "A"
         },
         {
@@ -663,7 +663,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, avg(outside_temp) AS \"Temp. extérieure\" FROM positions\nWHERE car_id = $car_id AND $__timeFilter(date) GROUP BY 1 ORDER BY 1",
+          "rawSql": "SELECT $__timeGroup(date, '1d') AS time, avg(outside_temp) AS \"Temp. extérieure\" FROM positions\nWHERE car_id = $car_id AND $__timeFilter(date) AND ideal_battery_range_km IS NOT NULL GROUP BY 1 ORDER BY 1",
           "refId": "B"
         }
       ],
